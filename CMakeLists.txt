@@ -17,9 +17,9 @@ target_link_libraries(costrm
 )
 target_compile_definitions(costrm PUBLIC PY_SSIZE_T_CLEAN)
 
-add_custom_target(COSTRM_COPY_DLLS
+add_custom_target(COSTRM_COPY_DATA
 	COMMAND
-		${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/py/python${COSTRM_PYVERS}.dll .
+		${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/py/ .
 	WORKING_DIRECTORY
 		${CMAKE_BINARY_DIR}
 	)
