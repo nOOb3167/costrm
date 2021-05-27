@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 0,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "configure-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "COSTRM_PYVERS": "$env{COSTRM_PYVERS}",
+        "COSTRM_PYPATH": "$env{APPDATA}/../Local/Programs/Python/Python$env{COSTRM_PYVERS}"
+      },
+      "environment": {
+        "COSTRM_PYVERS": "39"
+      }
+    },
+    {
+      "name": "x86-windows",
+      "inherits": [ "configure-base" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-base",
+      "configurePreset": "configure-base"
+    }
+  ]
+}
