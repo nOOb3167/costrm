@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
@@ -9,15 +10,25 @@
 namespace cm
 {
 
+CmPathPy
+make_path_py()
+{
+	auto p = search_path_py({ "python39.dll", "python39.zip" });
+	return { .m_exepath = get_exepath(), .m_py = p, .m_pyzip = p / "python39.zip" };
+}
+
 std::filesystem::path
-search_path_py(void)
+search_path_py(std::vector<std::string> mark)
 {
 	auto dir = get_exedir();
 	for (auto p = dir; p.has_parent_path(); p = p.parent_path()) {
 		auto candidate = p / "py";
-		auto marker = candidate / "python39.dll";
-		if (std::filesystem::is_directory(candidate) && std::filesystem::is_regular_file(marker))
+		if (std::filesystem::is_directory(candidate) &&
+			std::all_of(mark.begin(), mark.end(),
+				[&candidate](const std::string& a) { return std::filesystem::is_regular_file(candidate / a); }))
+		{
 			return candidate;
+		}
 	}
 	throw CM_THROW1();
 }
@@ -30,7 +41,7 @@ set_path_py(void)
 	if (int i = GetEnvironmentVariableW(L"PATH", oldpath.data(), oldpath.size()); i == 0 || i > oldpath.size())
 		throw CM_THROW1();
 
-	std::wstring newpath = search_path_py().native() + L";" + oldpath;
+	std::wstring newpath = make_path_py().m_py.native() + L";" + oldpath;
 
 	if (SetEnvironmentVariableW(L"PATH", newpath.c_str()) == 0)
 		throw CM_THROW1();

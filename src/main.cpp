@@ -23,36 +23,59 @@ using sp = ::std::shared_ptr<T>;
 namespace cm
 {
 
+class CmPyCon
+{
+public:
+	class cm_py_con_isolated_tag_t {};
+
+	CmPyCon(cm_py_con_isolated_tag_t) :
+		m_d()
+	{
+		PyConfig_InitIsolatedConfig(&m_d);
+	}
+
+	~CmPyCon()
+	{
+		PyConfig_Clear(&m_d);
+	}
+
+	PyConfig m_d;
+};
+
 class CmPyInFin
 {
 public:
 	CmPyInFin()
 	{
 		PyPreConfig precon = {};
-		PyConfig concon = {};
 
 		PyPreConfig_InitIsolatedConfig(&precon);
-		PyConfig_InitIsolatedConfig(&concon);
+
+		if (PyStatus_Exception(Py_PreInitialize(&precon)))
+			throw std::runtime_error("");
 
 		// https://docs.python.org/3/c-api/init_config.html#isolated-configuration
 		// https://docs.python.org/3/c-api/init_config.html#path-configuration
 		//   Configuration files are still used with this configuration
 
-		wchar_t dot[] = L".";
+		CmPyCon concon = CmPyCon(CmPyCon::cm_py_con_isolated_tag_t());
 
-		concon.base_exec_prefix = dot;
-		concon.base_executable = dot;
-		concon.base_prefix = dot;
-		concon.exec_prefix = dot;
-		concon.executable = dot;
-		concon.module_search_paths_set = 0;
-		concon.module_search_paths = {};
-		concon.prefix = dot;
+		CmPathPy pp = make_path_py();
 
-		if (PyStatus_Exception(Py_PreInitialize(&precon)))
-			throw std::runtime_error("");
-		if (PyStatus_Exception(Py_InitializeFromConfig(&concon)))
-			throw std::runtime_error("");
+		PyConfig_SetString(&concon.m_d, &concon.m_d.base_exec_prefix, pp.m_py.native().c_str());
+		PyConfig_SetString(&concon.m_d, &concon.m_d.base_executable, pp.m_exepath.native().c_str());
+		PyConfig_SetString(&concon.m_d, &concon.m_d.base_prefix, pp.m_py.native().c_str());
+		PyConfig_SetString(&concon.m_d, &concon.m_d.exec_prefix, pp.m_py.native().c_str());
+		PyConfig_SetString(&concon.m_d, &concon.m_d.executable, pp.m_exepath.native().c_str());
+		PyConfig_SetString(&concon.m_d, &concon.m_d.prefix, pp.m_py.native().c_str());
+		concon.m_d.module_search_paths_set = 1;
+		PyWideStringList_Append(&concon.m_d.module_search_paths, pp.m_pyzip.c_str());
+		PyWideStringList_Append(&concon.m_d.module_search_paths, pp.m_py.c_str());
+
+		if (PyStatus s = Py_InitializeFromConfig(&concon.m_d); PyStatus_Exception(s)) {
+			Py_ExitStatusException(s);
+			throw CM_THROW1();  /* unreachable */
+		}
 	}
 
 	~CmPyInFin()

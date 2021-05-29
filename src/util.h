@@ -8,7 +8,16 @@
 namespace cm
 {
 
-std::filesystem::path search_path_py(void);
+struct CmPathPy
+{
+	std::filesystem::path m_exepath;
+	std::filesystem::path m_py;
+	std::filesystem::path m_pyzip;
+};
+
+CmPathPy make_path_py();
+
+std::filesystem::path search_path_py(std::vector<std::string> mark);
 void set_path_py(void);
 [[deprecated]] void set_dlldir_py(void);
 [[deprecated]] void set_dlldir(std::filesystem::path p);
