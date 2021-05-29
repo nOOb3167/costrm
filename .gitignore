@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+/data/*
+!/data/z_empty_dummy.txt
+
+/py/*
+!/py/z_empty_dummy.txt
