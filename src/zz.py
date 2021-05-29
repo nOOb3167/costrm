@@ -1,0 +1,1 @@
+print(f'{__name__=} {__package__=}')

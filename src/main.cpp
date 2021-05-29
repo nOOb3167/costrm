@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 
@@ -14,9 +15,13 @@
 #endif
 
 #include <costrm.h>
+#include <util.h>
 
 template<typename T>
 using sp = ::std::shared_ptr<T>;
+
+namespace cm
+{
 
 class CmPyInFin
 {
@@ -33,14 +38,16 @@ public:
 		// https://docs.python.org/3/c-api/init_config.html#path-configuration
 		//   Configuration files are still used with this configuration
 
-		concon.base_exec_prefix = L".";
-		concon.base_executable = L".";
-		concon.base_prefix = L".";
-		concon.exec_prefix = L".";
-		concon.executable = L".";
+		wchar_t dot[] = L".";
+
+		concon.base_exec_prefix = dot;
+		concon.base_executable = dot;
+		concon.base_prefix = dot;
+		concon.exec_prefix = dot;
+		concon.executable = dot;
 		concon.module_search_paths_set = 0;
 		concon.module_search_paths = {};
-		concon.prefix = L".";
+		concon.prefix = dot;
 
 		if (PyStatus_Exception(Py_PreInitialize(&precon)))
 			throw std::runtime_error("");
@@ -59,7 +66,7 @@ void sp_pyobject_d(PyObject* a)
 	Py_XDECREF(a);
 }
 
-int main(int argc, char** argv)
+void stuff()
 {
 	printf("Compiled Against Python Header Version " PY_VERSION "\n");
 	printf("COSTRM_PYPATH " COSTRM_PYPATH "\n");
@@ -76,6 +83,18 @@ print(sys.path)
 	auto modobj = sp<PyObject>(PyImport_ExecCodeModule("mod0", &*codeobj), sp_pyobject_d);
 
 	assert(codeobj && modobj);
+
+	std::filesystem::path p = get_exepath();
+	std::filesystem::path r = get_exedir();
+}
+
+}
+
+int main(int argc, char** argv)
+{
+	cm::set_dlldir_py();
+
+	cm::stuff();
 
 	return EXIT_SUCCESS;
 }
