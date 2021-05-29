@@ -92,7 +92,7 @@ print(sys.path)
 
 int main(int argc, char** argv)
 {
-	cm::set_dlldir_py();
+	cm::set_path_py();
 
 	cm::stuff();
 
