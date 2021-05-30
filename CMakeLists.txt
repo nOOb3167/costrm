@@ -2,6 +2,14 @@ cmake_policy(VERSION 3.20)
 cmake_minimum_required(VERSION 3.20)
 project(costrm VERSION 3.20)
 
+include(${CMAKE_SOURCE_DIR}/cmake/BoostHelper.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
+
+set(Boost_VERBOSE TRUE)
+set(Boost_USE_STATIC_LIBS TRUE)
+
+find_package(Boost REQUIRED COMPONENTS log CONFIG)
+
 file(TO_CMAKE_PATH ${COSTRM_PYPATH} COSTRM_PYPATH)
 
 set(COSTRM_PYINC ${COSTRM_PYPATH}/include)
@@ -21,6 +29,8 @@ target_include_directories(costrm PUBLIC
 target_link_libraries(costrm
 	${COSTRM_PYLIB}
 	delayimp.lib
+	Boost::headers
+	Boost::log
 )
 target_compile_definitions(costrm PUBLIC -DPY_SSIZE_T_CLEAN)
 target_compile_features(costrm PUBLIC cxx_std_20)
@@ -44,3 +54,4 @@ add_custom_target(COSTRM_COPY_DATA
 #   DELAYLOAD
 # https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order?redirectedfrom=MSDN
 #   SetDllDirectory NOTE messes with search path, can only have one
+# .\Dependencies.exe -modules costrm.exe | Select-String -Pattern ".*boost.*" | % { $_ -replace ".* (.*\.dll).*", "`$1" }

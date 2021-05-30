@@ -5,6 +5,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include <boost/log/trivial.hpp>
+
 #ifdef _DEBUG
 #	define _CM_DEBUG_WAS_ENABLED
 #	undef _DEBUG  // prevents autolinking in python header (pragma comment(lib,"python39_d.lib"))
@@ -91,8 +93,8 @@ void sp_pyobject_d(PyObject* a)
 
 void stuff()
 {
-	printf("Compiled Against Python Header Version " PY_VERSION "\n");
-	printf("COSTRM_PYPATH " COSTRM_PYPATH "\n");
+	BOOST_LOG_TRIVIAL(warning) << "Compiled Against Python Header Version " PY_VERSION;
+	BOOST_LOG_TRIVIAL(warning) << "COSTRM_PYPATH " COSTRM_PYPATH;
 
 	CmPyInFin cpif;
 
