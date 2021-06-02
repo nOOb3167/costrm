@@ -1,6 +1,8 @@
+import json
+import re
+
 from argparse import ArgumentParser
 from pathlib import Path
-import re
 from string import Template
 
 """
@@ -52,9 +54,6 @@ def findpyver(p: Path):
     return r
 
 def run(boostDir: Path, pyPath: Path):
-    assert not boostDir or (boostDir / "BoostConfig.cmake").exists()
-    assert not pyPath or (pyPath / "python.exe").exists()
-
     cwd: Path = Path.cwd().resolve(strict=True)
     
     sourceDir: Path = cwd / "CMakeLists.txt"
@@ -64,7 +63,7 @@ def run(boostDir: Path, pyPath: Path):
 
     userPresets: Path = cwd / "CMakeUserPresets.json"
 
-    if True: # and not p.exists():
+    if not userPresets.exists():
         s = Template(TEMPLATE)
         a = s.substitute(sourceDir=sourceDir.as_posix(),
                          boostDir=boostDir and boostDir.as_posix() or "",
@@ -74,6 +73,27 @@ def run(boostDir: Path, pyPath: Path):
 
         with userPresets.open(mode="wt") as f:
             f.write(a)
+
+    with userPresets.open(mode="rt") as f:
+        z = f.read()
+        j = json.loads(z)
+        
+        assert (j["version"] == 2)
+        assert ("cmakeMinimumRequired" in j and
+                "major" in j["cmakeMinimumRequired"] and
+                "minor" in j["cmakeMinimumRequired"] and
+                "patch" in j["cmakeMinimumRequired"])
+        assert ("configurePresets" in j and
+                "buildPresets" in j)
+
+        a = list(filter(lambda x: x["name"] == "user-configure-base", j["configurePresets"]))[0]
+        assert ("cacheVariables" in a and
+                "Boost_DIR" in a["cacheVariables"] and
+                "COSTRM_PYPATH" in a["cacheVariables"] and
+                "COSTRM_PYVERS" in a["cacheVariables"])
+        assert (Path(a["cacheVariables"]["Boost_DIR"]) / "BoostConfig.cmake").exists()
+        assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / "python.exe").exists()
+        assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / f"python{a['cacheVariables']['COSTRM_PYVERS']}.dll").exists()
 
 if __name__ == '__main__':
     import sys
