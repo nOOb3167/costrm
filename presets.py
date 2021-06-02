@@ -66,39 +66,37 @@ def findpyver(p: Path):
     e = "python(.*)\\.dll$"
     w = [re.search(e, x.as_posix()).group(1) for x in p.iterdir() if re.search("python(.*)\\.dll$", x.as_posix())]
     r = max(w, key=lambda x: len(x))  # longest match ex take python39.dll over python3.dll
-    logging.info(f"checked: {p}")
-    logging.info(f"got: {w} {r}")
-    return r
+    return r, w
 
 def run(boostDir: Path, pyPath: Path):
     cwd: Path = Path.cwd().resolve(strict=True)
     
     sourceDir: Path = cwd / "CMakeLists.txt"
-
-    pyVersion: str = pyPath and findpyver(pyPath) or None
-
     userPresets: Path = cwd / "CMakeUserPresets.json"
 
-    logging.info(f"{pyVersion=}")
+    pyVersion, pyver_info = pyPath and findpyver(pyPath) or (None, None)
+
+    logging.info(f"{sourceDir=}")
+    logging.info(f"{userPresets=} {userPresets.exists()=}")
+    logging.info(f"{pyVersion=} {pyver_info=}")
     logging.info(f"{pyPath=}")
     logging.info(f"{boostDir=}")
-    logging.info(f"{userPresets=} {userPresets.exists()=}")
 
     if not userPresets.exists():
-        logging.info("creating userPresets")
+        logging.info("creating userPresets file")
 
         s = Template(TEMPLATE)
         a = s.substitute(sourceDir=sourceDir.as_posix(),
                          boostDir=boostDir and boostDir.as_posix() or "",
                          pyPath=pyPath and pyPath.as_posix() or "",
                          pyVersion=pyVersion or "")
-        print(a)
+        logging.info(a)
 
         with userPresets.open(mode="wt") as f:
             f.write(a)
 
     with userPresets.open(mode="rt") as f:
-        logging.info("validating userPresets")
+        logging.info("validating userPresets file")
 
         z = f.read()
         j = json.loads(z)
@@ -138,11 +136,6 @@ def run(boostDir: Path, pyPath: Path):
         logging.info("completed")
 
 if __name__ == '__main__':
-    import sys
-    sys.argv.append("--pyPath")
-    sys.argv.append("C:/Users/Andrej/AppData/Local/Programs/Python/Python39")
-    sys.argv.append("--boostDir")
-    sys.argv.append("C:/Users/Andrej/test/boost/boost_1_76_0/lib64-msvc-14.2/cmake/Boost-1.76.0")
     parser = ArgumentParser()
     parser.add_argument("--boostDir", default=None, type=Path)
     parser.add_argument("--pyPath", default=None, type=Path)
