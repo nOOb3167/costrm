@@ -20,9 +20,9 @@ TEMPLATE = r"""
 {
     "version": 2,
     "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 0,
-    "patch": 0
+        "major": 3,
+        "minor": 0,
+        "patch": 0
     },
     "configurePresets": [
     {
@@ -31,17 +31,17 @@ TEMPLATE = r"""
         "generator": "Ninja",
         "binaryDir": "${sourceDir}/out/build/$${presetName}",
         "cacheVariables": {
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/$${presetName}",
-        "Boost_DIR": "${boostDir}",
-        "COSTRM_PYPATH": "${pyPath}",
-        "COSTRM_PYVERS": "${pyVersion}"
+            "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/$${presetName}",
+            "Boost_DIR": "${boostDir}",
+            "COSTRM_PYPATH": "${pyPath}",
+            "COSTRM_PYVERS": "${pyVersion}"
         }
     },
     {
         "name": "x86-windows-debug",
         "inherits": [ "user-configure-base" ],
         "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+            "CMAKE_BUILD_TYPE": "Debug"
         }
     }
     ],
