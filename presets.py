@@ -1,8 +1,12 @@
 import json
+import locale
 import logging
 import re
+import subprocess
+import traceback
 
 from argparse import ArgumentParser
+from contextlib import contextmanager
 from pathlib import Path
 from string import Template
 
@@ -50,6 +54,14 @@ TEMPLATE = r"""
 }
 """
 
+@contextmanager
+def notice(msg):
+    try:
+        yield None
+    except:
+        logging.error(msg)
+        traceback.print_exc()
+
 def findpyver(p: Path):
     e = "python(.*)\\.dll$"
     w = [re.search(e, x.as_posix()).group(1) for x in p.iterdir() if re.search("python(.*)\\.dll$", x.as_posix())]
@@ -91,29 +103,37 @@ def run(boostDir: Path, pyPath: Path):
         z = f.read()
         j = json.loads(z)
         
-        logging.info("version")
+        with notice("version and cmakeMinimumRequired entry"):
+            assert (j["version"] == 2)
+            assert ("cmakeMinimumRequired" in j and
+                    "major" in j["cmakeMinimumRequired"] and
+                    "minor" in j["cmakeMinimumRequired"] and
+                    "patch" in j["cmakeMinimumRequired"])
 
-        assert (j["version"] == 2)
-        assert ("cmakeMinimumRequired" in j and
-                "major" in j["cmakeMinimumRequired"] and
-                "minor" in j["cmakeMinimumRequired"] and
-                "patch" in j["cmakeMinimumRequired"])
+        with notice("configurePresets and buildPresets entries must exist"):
+            assert ("configurePresets" in j and
+                    "buildPresets" in j)
 
-        logging.info("presets")
+        with notice("user-configure-base preset entry must exist"):
+            a = list(filter(lambda x: x["name"] == "user-configure-base", j["configurePresets"]))[0]
 
-        assert ("configurePresets" in j and
-                "buildPresets" in j)
+        with notice("cacheVariables must exist"):
+            assert ("cacheVariables" in a and
+                    "Boost_DIR" in a["cacheVariables"] and
+                    "COSTRM_PYPATH" in a["cacheVariables"] and
+                    "COSTRM_PYVERS" in a["cacheVariables"])
+        with notice("cacheVariable boost_DIR must contain BoostConfig.cmake"):
+            assert (Path(a["cacheVariables"]["Boost_DIR"]) / "BoostConfig.cmake").exists()
+        with notice("cacheVariable COSTRM_PYPATH must contain python.exe"):
+            assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / "python.exe").exists()
+        with notice("cacheVariable COSTRM_PYPATH must contain python dll"):
+            assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / f"python{a['cacheVariables']['COSTRM_PYVERS']}.dll").exists()
 
-        logging.info("preset user-configure-base")
-
-        a = list(filter(lambda x: x["name"] == "user-configure-base", j["configurePresets"]))[0]
-        assert ("cacheVariables" in a and
-                "Boost_DIR" in a["cacheVariables"] and
-                "COSTRM_PYPATH" in a["cacheVariables"] and
-                "COSTRM_PYVERS" in a["cacheVariables"])
-        assert (Path(a["cacheVariables"]["Boost_DIR"]) / "BoostConfig.cmake").exists()
-        assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / "python.exe").exists()
-        assert (Path(a["cacheVariables"]["COSTRM_PYPATH"]) / f"python{a['cacheVariables']['COSTRM_PYVERS']}.dll").exists()
+        with notice("cmake --list-presets"):
+            logging.info(f"{locale.getpreferredencoding()=}")
+            c = subprocess.run(["cmake", "--list-presets"], shell=True, check=True, capture_output=True, encoding=locale.getpreferredencoding())
+            logging.info(f"cmake --list-presets returned {c.stdout=}")
+            assert re.search("x86-windows-debug", c.stdout)
 
         logging.info("completed")
 
