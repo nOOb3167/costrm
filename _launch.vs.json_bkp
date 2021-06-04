@@ -1,0 +1,13 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "costrm.exe",
+      "name": "costrm.exe",
+      "env": "PATH=C:\\Users\\Andrej\\AppData\\Local\\Programs\\Python\\Python39;${env.PATH}"
+    }
+  ]
+}

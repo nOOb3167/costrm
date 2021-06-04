@@ -14,6 +14,7 @@
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
         "Boost_DIR": "$env{USERPROFILE}/test/boost/boost_1_76_0/lib64-msvc-14.2/cmake/Boost-1.76.0",
+        "COSTRM_CLOBBER_INCLUDE": "",
         "COSTRM_PYVERS": "$env{COSTRM_PYVERS}",
         "COSTRM_PYPATH": "$env{APPDATA}/../Local/Programs/Python/Python$env{COSTRM_PYVERS}"
       },
