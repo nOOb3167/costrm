@@ -21,7 +21,7 @@ set(COSTRM_DELAYLOAD_LIB $<$<PLATFORM_ID:Windows>:delayimp.lib>)
 set(COSTRM_DELAYLOAD_FLAG $<$<PLATFORM_ID:Windows>:/DELAYLOAD:${COSTRM_PYDLL_NAME}>)
 
 
-set(Boost_VERBOSE TRUE)
+# set(Boost_VERBOSE TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
 
 find_package(Boost REQUIRED COMPONENTS log CONFIG)
@@ -39,17 +39,13 @@ add_executable(costrm
 target_include_directories(costrm PUBLIC
 	${CMAKE_SOURCE_DIR}/src
 	${CMAKE_BINARY_DIR}
-	${COSTRM_PYINC}
 	)
 target_link_libraries(costrm
-	${COSTRM_PYLIB}
-	${COSTRM_DELAYLOAD_LIB}
+	pyembed_target
 	Boost::headers
 	Boost::log
 )
-target_compile_definitions(costrm PUBLIC -DPY_SSIZE_T_CLEAN -DCOSTRM_OBJECT_H_DEF)
 target_compile_features(costrm PUBLIC cxx_std_20)
-target_link_options(costrm PUBLIC ${COSTRM_DELAYLOAD_FLAG})
 
 # https://github.com/MicrosoftDocs/visualstudio-docs/issues/6425
 # https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/python/working-with-c-cpp-python-in-visual-studio.md
