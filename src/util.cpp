@@ -3,18 +3,47 @@
 #include <stdexcept>
 #include <string>
 
-#include <windows.h>
+#include <boost/log/trivial.hpp>
 
+#include <windows.h>
+#include <delayimp.h>
+
+#include <costrm.h>
+#include <costrm_aux.h>
 #include <util.h>
 
 namespace cm
 {
 
+bool
+try_delayload(const char *n)
+{
+	// TODO: https://docs.microsoft.com/en-us/cpp/build/reference/error-handling-and-notification?view=msvc-160#delay-load-exception-codes
+	// TODO: https://github.com/MicrosoftDocs/cpp-docs/issues/1003
+	__try
+	{
+		return SUCCEEDED(__HrLoadAllImportsForDll(n));
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return false;
+	}
+}
+
+void
+do_delayload(std::string n)
+{
+	if (!try_delayload(n.c_str())) {
+		BOOST_LOG_TRIVIAL(warning) << "Failed delayload [" << n << "]";
+		throw CM_THROW1();
+	}
+}
+
 CmPathPy
 make_path_py()
 {
-	auto p = search_path_py({ "python39.dll", "python39.zip" });
-	return { .m_exepath = get_exepath(), .m_py = p, .m_pyzip = p / "python39.zip" };
+	auto p = search_path_py({ get_pydll_name(), get_pyzip_name() });
+	return { .m_exepath = get_exepath(), .m_py = p, .m_pyzip = p / get_pyzip_name() };
 }
 
 std::filesystem::path
@@ -78,6 +107,20 @@ std::filesystem::path
 get_exedir(void)
 {
 	return get_exepath().parent_path();
+}
+
+std::string
+get_pydll_name(void)
+{
+	const char l[] = COSTRM_PYDLL_NAME;
+	std::string m(l);
+	return m;
+}
+
+std::string get_pyzip_name(void)
+{
+	std::string r = std::string("python") + COSTRM_PYVERS + ".zip";
+	return r;
 }
 
 }

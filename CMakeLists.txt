@@ -2,35 +2,39 @@ cmake_policy(VERSION 3.20)
 cmake_minimum_required(VERSION 3.20)
 project(costrm VERSION 3.20)
 
-include(FetchContent)
-
 include(${CMAKE_SOURCE_DIR}/cmake/BoostHelper.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/EnsurePyEmbed.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/ForbiddenHebrewSorcery000.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/PyPath.cmake)
+
+
+costrm_define_pyvars(${COSTRM_PYPATH})
+
+file(GENERATE OUTPUT costrm_aux.h CONTENT "#define COSTRM_PYDLL_NAME \"${COSTRM_PYDLL_NAME}\"")
+
+costrm_ensure_pyembed(${COSTRM_PYDLL_D_PATH})
+
+forbidden_hebrew_sorcery000(${COSTRM_PYINC})
+
+set(COSTRM_DELAYLOAD_LIB $<$<PLATFORM_ID:Windows>:delayimp.lib>)
+set(COSTRM_DELAYLOAD_FLAG $<$<PLATFORM_ID:Windows>:/DELAYLOAD:${COSTRM_PYDLL_NAME}>)
+
 
 set(Boost_VERBOSE TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
 
 find_package(Boost REQUIRED COMPONENTS log CONFIG)
 
-file(TO_CMAKE_PATH ${COSTRM_PYPATH} COSTRM_PYPATH)
-
-set(COSTRM_PYINC "${COSTRM_PYPATH}/include")
-set(COSTRM_PYLIB "${COSTRM_PYPATH}/libs/python${COSTRM_PYVERS}$<$<CONFIG:Debug>:_d>.lib")
 
 configure_file(src/costrm.h.in costrm.h @ONLY)
 
-forbidden_hebrew_sorcery000(${COSTRM_PYINC})
-
-FetchContent_Declare(pyembed
-	URL https://www.python.org/ftp/python/3.9.5/python-3.9.5-embed-amd64.zip
-	URL_HASH SHA256=F6954B64AF18386C523988A23C512452FD289E3591218E7DBB76589B9B326D34
-)
-FetchContent_MakeAvailable(pyembed)
 
 add_executable(costrm
 	src/main.cpp
 	src/util.cpp		src/util.h
+	costrm.h
+	costrm_aux.h
 	)
 target_include_directories(costrm PUBLIC
 	${CMAKE_SOURCE_DIR}/src
@@ -39,20 +43,13 @@ target_include_directories(costrm PUBLIC
 	)
 target_link_libraries(costrm
 	${COSTRM_PYLIB}
-	delayimp.lib
+	${COSTRM_DELAYLOAD_LIB}
 	Boost::headers
 	Boost::log
 )
 target_compile_definitions(costrm PUBLIC -DPY_SSIZE_T_CLEAN -DCOSTRM_OBJECT_H_DEF)
 target_compile_features(costrm PUBLIC cxx_std_20)
-target_link_options(costrm PUBLIC "/DELAYLOAD:python39$<$<CONFIG:Debug>:_d>.dll")
-
-add_custom_target(COSTRM_COPY_DATA
-	COMMAND
-		${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/py/ py/
-	WORKING_DIRECTORY
-		${CMAKE_BINARY_DIR}
-	)
+target_link_options(costrm PUBLIC ${COSTRM_DELAYLOAD_FLAG})
 
 # https://github.com/MicrosoftDocs/visualstudio-docs/issues/6425
 # https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/python/working-with-c-cpp-python-in-visual-studio.md

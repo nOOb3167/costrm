@@ -87,7 +87,7 @@ void sp_pyobject_d(PyObject* a)
 void stuff()
 {
 	BOOST_LOG_TRIVIAL(warning) << "Compiled Against Python Header Version " PY_VERSION;
-	BOOST_LOG_TRIVIAL(warning) << "COSTRM_PYPATH " COSTRM_PYPATH;
+	BOOST_LOG_TRIVIAL(warning) << "COSTRM_PYVERS " COSTRM_PYVERS;
 
 	CmPyInFin cpif;
 
@@ -111,6 +111,8 @@ print(sys.path)
 int main(int argc, char** argv)
 {
 	cm::set_path_py();
+
+	cm::do_delayload(cm::get_pydll_name());
 
 	cm::stuff();
 
