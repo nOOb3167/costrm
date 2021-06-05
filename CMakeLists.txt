@@ -2,6 +2,8 @@ cmake_policy(VERSION 3.20)
 cmake_minimum_required(VERSION 3.20)
 project(costrm VERSION 3.20)
 
+include(FetchContent)
+
 include(${CMAKE_SOURCE_DIR}/cmake/BoostHelper.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/ForbiddenHebrewSorcery000.cmake)
@@ -19,6 +21,12 @@ set(COSTRM_PYLIB "${COSTRM_PYPATH}/libs/python${COSTRM_PYVERS}$<$<CONFIG:Debug>:
 configure_file(src/costrm.h.in costrm.h @ONLY)
 
 forbidden_hebrew_sorcery000(${COSTRM_PYINC})
+
+FetchContent_Declare(pyembed
+	URL https://www.python.org/ftp/python/3.9.5/python-3.9.5-embed-amd64.zip
+	URL_HASH SHA256=F6954B64AF18386C523988A23C512452FD289E3591218E7DBB76589B9B326D34
+)
+FetchContent_MakeAvailable(pyembed)
 
 add_executable(costrm
 	src/main.cpp
