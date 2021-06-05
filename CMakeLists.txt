@@ -1,6 +1,6 @@
 cmake_policy(VERSION 3.20)
 cmake_minimum_required(VERSION 3.20)
-project(costrm VERSION 3.20)
+project(costrm)
 
 include(${CMAKE_SOURCE_DIR}/cmake/BoostHelper.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/EnsurePyEmbed.cmake)
@@ -9,25 +9,14 @@ include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/PyPath.cmake)
 
 
-costrm_define_pyvars(${COSTRM_PYPATH})
-
-file(GENERATE OUTPUT costrm_aux.h CONTENT "#define COSTRM_PYDLL_NAME \"${COSTRM_PYDLL_NAME}\"")
-
-costrm_ensure_pyembed(${COSTRM_PYDLL_D_PATH})
-
-forbidden_hebrew_sorcery000(${COSTRM_PYINC})
-
-set(COSTRM_DELAYLOAD_LIB $<$<PLATFORM_ID:Windows>:delayimp.lib>)
-set(COSTRM_DELAYLOAD_FLAG $<$<PLATFORM_ID:Windows>:/DELAYLOAD:${COSTRM_PYDLL_NAME}>)
+costrm_define_pyvars(${COSTRM_PYTHON_INSTALL_DIR})
+costrm_ensure_pyembed()
+forbidden_hebrew_sorcery000()
 
 
 # set(Boost_VERBOSE TRUE)
 set(Boost_USE_STATIC_LIBS TRUE)
-
 find_package(Boost REQUIRED COMPONENTS log CONFIG)
-
-
-configure_file(src/costrm.h.in costrm.h @ONLY)
 
 
 add_executable(costrm

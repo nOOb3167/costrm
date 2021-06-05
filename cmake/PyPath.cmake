@@ -59,10 +59,15 @@ function(costrm_define_pyvars PYPATH)
 	target_compile_definitions(pyembed_target INTERFACE -DPY_SSIZE_T_CLEAN -DCOSTRM_OBJECT_H_DEF)
 	target_link_options(pyembed_target INTERFACE $<$<PLATFORM_ID:Windows>:/DELAYLOAD:${PYLIBSTEM}.dll>)
 
+	# set variables for substitutions
+
+	set(COSTRM_PYPATH "${COSTRM_PYPATH}")
+	set(COSTRM_PYVERS "${VERS}")
+
+	configure_file(src/costrm.h.in costrm.h @ONLY)
+	file(GENERATE OUTPUT costrm_aux.h CONTENT "#define COSTRM_PYDLL_NAME \"${PYLIBSTEM}.dll\"")
+
+	# set variables for result
+
 	set(COSTRM_PYPATH "${COSTRM_PYPATH}" PARENT_SCOPE)
-	set(COSTRM_PYVERS "${VERS}" PARENT_SCOPE)
-	set(COSTRM_PYINC ${PYPATH}/include PARENT_SCOPE)
-	set(COSTRM_PYLIB ${PYPATH}/libs/${PYLIBSTEM}.lib PARENT_SCOPE)
-	set(COSTRM_PYDLL_D_PATH "${DLLD}" PARENT_SCOPE)
-	set(COSTRM_PYDLL_NAME "${PYLIBSTEM}.dll" PARENT_SCOPE)
 endfunction()

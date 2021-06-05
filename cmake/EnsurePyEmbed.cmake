@@ -1,4 +1,4 @@
-macro(costrm_ensure_pyembed PYDLL_D_PATH)
+macro(costrm_ensure_pyembed)
 	include(FetchContent)
 
 	FetchContent_Declare(pyembed
@@ -9,8 +9,15 @@ macro(costrm_ensure_pyembed PYDLL_D_PATH)
 
 	FetchContent_GetProperties(pyembed)
 	if(NOT pyembed_POPULATED)
+		message(STATUS "pyembed populate")
+
 		FetchContent_Populate(pyembed)
+
+		get_property(PYDLL_D_PATH TARGET pyembed_target PROPERTY IMPORTED_LOCATION_DEBUG)
 		
+		message(STATUS "pyembed patching")
+		message(STATUS "pyembed copying [${PYDLL_D_PATH}]")
+
 		file(COPY "${PYDLL_D_PATH}" DESTINATION py)
 	endif()
 endmacro()
