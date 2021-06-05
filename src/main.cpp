@@ -7,17 +7,6 @@
 
 #include <boost/log/trivial.hpp>
 
-#if 0
-#ifdef _DEBUG
-#	define _CM_DEBUG_WAS_ENABLED
-#	undef _DEBUG  // prevents autolinking in python header (pragma comment(lib,"python39_d.lib"))
-#endif
-#include <Python.h>
-#ifdef _CM_DEBUG_WAS_ENABLED
-#	define _DEBUG
-#endif
-#endif
-
 #include <Python.h>
 
 #include <costrm.h>

@@ -35,7 +35,7 @@ target_link_libraries(costrm
 	Boost::headers
 	Boost::log
 )
-target_compile_definitions(costrm PUBLIC -DPY_SSIZE_T_CLEAN)
+target_compile_definitions(costrm PUBLIC -DPY_SSIZE_T_CLEAN -DCOSTRM_OBJECT_H_DEF)
 target_compile_features(costrm PUBLIC cxx_std_20)
 target_link_options(costrm PUBLIC "/DELAYLOAD:python39$<$<CONFIG:Debug>:_d>.dll")
 

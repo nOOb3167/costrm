@@ -1,8 +1,10 @@
 function(costrm_clobber_include FNAME)
 	file(READ ${FNAME} HHH)
 	string(REGEX REPLACE
-		"\"object.h\""
-		"<object.h>"
+		"([ \\t]+)_Py_RefTotal((\\+\\+)|(\\-\\-));"
+"#  ifndef COSTRM_OBJECT_H_DEF
+\\1_Py_RefTotal\\2    /* do_not_replace_twice */ ;
+#  endif // COSTRM_OBJECT_H_DEF"
 		HHH "${HHH}")
 	file(WRITE ${FNAME} "${HHH}")
 endfunction()
@@ -13,15 +15,10 @@ function(forbidden_hebrew_sorcery000 PYINC)
 		return()
 	endif()
 
-	costrm_clobber_include(${PYINC}/Python.h)
-	costrm_clobber_include(${PYINC}/pytime.h)
+	if(NOT EXISTS ${PYINC}/object.h_bkp)
+		file(READ ${PYINC}/object.h OLD)
+		file(WRITE ${PYINC}/object.h_bkp "${OLD}")
+	endif()
 
-	file(READ ${PYINC}/object.h OBJECTH)
-	string(REGEX REPLACE
-		"_Py_RefTotal((\\+\\+)|(\\-\\-))"
-		"//COSTRM_EDITED _Py_RefTotal(\\1)"
-		OBJECTH2 "${OBJECTH}")
-	file(WRITE ${CMAKE_BINARY_DIR}/object.h_ "${OBJECTH2}")
-
-	file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/object.h INPUT ${CMAKE_BINARY_DIR}/object.h_)
+	costrm_clobber_include(${PYINC}/object.h)
 endfunction()
