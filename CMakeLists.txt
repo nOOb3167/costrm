@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(costrm)
 
 include(${CMAKE_SOURCE_DIR}/cmake/BoostHelper.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/EnsureCefThree.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/EnsurePyEmbed.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/ForbiddenHebrewSorcery000.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/PropHelper.cmake)
@@ -12,6 +13,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/PyPath.cmake)
 costrm_define_pyvars(${COSTRM_PYTHON_INSTALL_DIR})
 costrm_ensure_pyembed()
 forbidden_hebrew_sorcery000()
+
+costrm_ensure_cefthree()
 
 
 # set(Boost_VERBOSE TRUE)
@@ -35,6 +38,8 @@ target_link_libraries(costrm
 	Boost::log
 )
 target_compile_features(costrm PUBLIC cxx_std_20)
+
+add_subdirectory(src/cef)
 
 # https://github.com/MicrosoftDocs/visualstudio-docs/issues/6425
 # https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/python/working-with-c-cpp-python-in-visual-studio.md
